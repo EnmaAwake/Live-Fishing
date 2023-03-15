@@ -7,33 +7,47 @@ using TMPro;
 
 public class Fish : MonoBehaviour
 {
-    private Rigidbody2D rb;
-    public float fishingCounter = 50;
-    public bool gotFish;
-    [SerializeField] private bool catching;
-    [SerializeField] private bool outLevel;
-    [SerializeField] private float fishSpeed;
-    [SerializeField] private float minS;
-    [SerializeField] private float maxS;
 
+    [Header("Basic Components")]
+    private Rigidbody2D rb;
+
+    [Header("Fish Components")]
+    public float fishSpeed;
+    public float minS;
+    public float maxS;
+
+    [Header("Mechanics")]
+    [SerializeField] private bool catching;
+    public bool gotFish;
+    [SerializeField] private bool outLevel;
+    public float fishingCounter = 50;
+
+    [Header("Score Components")]
     public TextMeshProUGUI scoreTxt;
     private int score;
-
     public TextMeshProUGUI captureTxt;
     private float capture;
 
     void Start()
-    {      
+    { 
+        #region ComponentsAssociation
         score = 0;
         rb = GetComponent<Rigidbody2D>();
+
+        #endregion
 
     }
     void OnTriggerStay2D(Collider2D Collider)
     {
+        #region Fishing
+
         if (Collider.gameObject.tag == "Player")
         {
             catching = true;
         }
+        #endregion
+
+        #region OutLevel
 
         if (Collider.gameObject.tag == "UpperWall")
         {
@@ -46,51 +60,70 @@ public class Fish : MonoBehaviour
             rb.velocity = new Vector2 (rb.velocity.x , 5);
             outLevel = true;
         }
+        #endregion
     }
     void FixedUpdate()
     {
+        #region Fishing Movement
+
         if (outLevel == false)
         {
             rb.velocity = new Vector2(rb.velocity.x , Random.Range(minS, maxS) * fishSpeed);
         }
+        #endregion
+
+        #region Score
 
         scoreTxt.text = score.ToString();
         captureTxt.text = capture.ToString();
         capture = fishingCounter;
+        #endregion
 
-        if (catching == true)
+        #region Catching The Fish
+
+        switch (catching)
         {
-            fishingCounter ++;
+            case true:
+                fishingCounter ++;
+                break;
+            case false:
+                fishingCounter --;
+                break;
         }
-        else
-        {
-            fishingCounter --;
-        }
+        #endregion
+
+        #region Reset Condition
 
         if (fishingCounter <= 0)
         {
             Respawn();
         }
+        #endregion
 
-        if(fishingCounter >= 300)
+        #region Win Condition
+
+        switch (fishingCounter)
         {
-            gotFish = true;
-            transform.position = new Vector2 (0.038f , 0);
-            fishingCounter = 150;
+            case var fc when fc >= 300:
+                gotFish = true;
+                transform.position = new Vector2 (0.038f , 0);
+                fishingCounter = 150;
+                score ++;
+                break;
+            default:
+                break;
         }
+        #endregion
 
-        if(gotFish == true)
-        {
-            score = score + 1;
-        }
-
-        gotFish = false;
-        catching = false;
         outLevel = false;
+        catching = false;
     }
+
+    #region Reset
 
     void Respawn()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+    #endregion
 }
