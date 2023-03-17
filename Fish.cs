@@ -1,4 +1,4 @@
-using System.Threading;
+using System.Timers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,7 +20,8 @@ public class Fish : MonoBehaviour
     [SerializeField] private bool catching;
     public bool gotFish;
     [SerializeField] private bool outLevel;
-    public float fishingCounter = 50;
+    public float fishingCounter = 10;
+    [SerializeField] private float counterRate;
 
     [Header("Score Components")]
     public TextMeshProUGUI scoreTxt;
@@ -51,13 +52,13 @@ public class Fish : MonoBehaviour
 
         if (Collider.gameObject.tag == "UpperWall")
         {
-            rb.velocity = new Vector2 (rb.velocity.x ,  -5);
+            rb.velocity = new Vector2 (rb.velocity.x ,  -1);
             outLevel = true;
         }
 
         if (Collider.gameObject.tag == "DownWall")
         {
-            rb.velocity = new Vector2 (rb.velocity.x , 5);
+            rb.velocity = new Vector2 (rb.velocity.x , 1);
             outLevel = true;
         }
         #endregion
@@ -68,7 +69,9 @@ public class Fish : MonoBehaviour
 
         if (outLevel == false)
         {
-            rb.velocity = new Vector2(rb.velocity.x , Random.Range(minS, maxS) * fishSpeed);
+            float speed = Random.Range(minS, maxS) * fishSpeed;
+            float yVelocity = Mathf.Lerp(rb.velocity.y, speed , Time.deltaTime);
+            rb.velocity = new Vector2(rb.velocity.x, yVelocity);
         }
         #endregion
 
@@ -84,10 +87,10 @@ public class Fish : MonoBehaviour
         switch (catching)
         {
             case true:
-                fishingCounter ++;
+                fishingCounter += Time.deltaTime * counterRate;
                 break;
             case false:
-                fishingCounter --;
+                fishingCounter -= Time.deltaTime * counterRate;
                 break;
         }
         #endregion
